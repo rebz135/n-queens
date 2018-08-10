@@ -43,7 +43,7 @@ window.findNQueensSolution = function(n) {
     for (let r=0; r<n; r++) {
       for (let c=0; c<n; c++) {
         if (solution) {
-          return solution;
+          return;
         } else if (!!currentBoard.get(r)[c]) {
         } else if (queensLeft === 0) {
           console.log(currentBoard);
@@ -70,9 +70,8 @@ window.findNQueensSolution = function(n) {
         startBoard.togglePiece(r,c);
         queenFinder(n-1, startBoard);
         if (solution) {
-          return solution;
+          return;
         }
-        startBoard.togglePiece(r,c);
       }
     }
   }
@@ -83,12 +82,49 @@ window.findNQueensSolution = function(n) {
   
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined;
-
-
+  var solutionCount = 0;
   
+  var solutionObj = {};
+  
+  let queenFinder = function (queensLeft, currentBoard = startBoard) {
+    for (let r=0; r<n; r++) {
+      for (let c=0; c<n; c++) {
+        if (solutionObj[JSON.stringify(currentBoard)]) {
+          return;
+        } else if (!!currentBoard.get(r)[c]) {
+        } else if (queensLeft === 0) {
+          solutionObj[JSON.stringify(currentBoard)] = 1;
+          queensLeft = n;
+        } else {
+          currentBoard.togglePiece(r,c);
+          if (!currentBoard.hasAnyQueensConflicts()) {
+            queensLeft--;
+            queenFinder(queensLeft, currentBoard);
+          } else {
+            currentBoard.togglePiece(r,c);
+          }
+        }
+      }
+      
+    }
+  }
+  
+  let initializeBoard = function () {
+    for (let r=0; r<n; r++) {
+      for (let c=0; c<n; c++) {
+        let startBoard = new Board({n: n});
+        startBoard.togglePiece(r,c);
+        queenFinder(n-1, startBoard);
+      }
+    }
+  }
+
+  initializeBoard();
+
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
+  
+  return Object.keys(solutionObj).length;
 };
 
 console.log(findNQueensSolution(4));
+console.log(countNQueensSolutions(6));
